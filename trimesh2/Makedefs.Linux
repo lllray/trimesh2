@@ -5,7 +5,6 @@ CXX = g++
 #CXX = clang++ -stdlib=libc++
 AR = ar
 
-ARCHOPTS = -m32 -march=core2 -mfpmath=sse -mtune=native
 COPTS = -fno-strict-overflow -fno-math-errno -fno-trapping-math
 COPTS += -Wall -Wextra -Wshadow
 DEFINES = -U_FORTIFY_SOURCE

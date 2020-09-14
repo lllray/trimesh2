@@ -14,12 +14,12 @@ adaptive outlier rejection, and symmetric point-to-plane minimization.
 using namespace std;
 
 
-#define MAX_ITERS 150
+#define MAX_ITERS 5
 #define TERMINATION_ITER_THRESH 25
 #define FINAL_ITERS 2
 #define MIN_PAIRS 10
 #define DESIRED_PAIRS 200
-#define DESIRED_PAIRS_FINAL 5000
+#define DESIRED_PAIRS_FINAL 2000
 #define CDF_UPDATE_INTERVAL 20
 #define APPROX_EPS 0.05f
 #define REJECT_BDY false
@@ -622,8 +622,8 @@ float ICP(TriMesh *mesh1, TriMesh *mesh2,
 	timestamp t_start = now();
 
 	// Precompute normals and connectivity (used to determine boundaries)
-	mesh1->need_normals();
-	mesh2->need_normals();
+	//mesh1->need_normals();
+	//mesh2->need_normals();
 	if (REJECT_BDY) {
 		mesh1->need_faces();
 		mesh1->need_neighbors();
@@ -675,12 +675,12 @@ float ICP(TriMesh *mesh1, TriMesh *mesh2,
 		bool recompute = ((iter % CDF_UPDATE_INTERVAL) == 2);
 
 		if (recompute) {
-			if (!had_weights) {
-				compute_overlaps(mesh1, mesh2, xf1, xf2,
-						 kd1, kd2,
-						 weights1, weights2,
-						 maxdist, verbose);
-			}
+//			if (!had_weights) {
+//				compute_overlaps(mesh1, mesh2, xf1, xf2,
+//						 kd1, kd2,
+//						 weights1, weights2,
+//						 maxdist, verbose);
+//			}
 
 			// If we're recomputing CDFs, use uniform sampling
 			// on this iteration to make sure that covariance
@@ -695,7 +695,9 @@ float ICP(TriMesh *mesh1, TriMesh *mesh2,
 			       DESIRED_PAIRS, cdfincr, recompute,
 			       maxdist, angle_thresh,
 			       verbose, iter_xform_type);
-
+        if (verbose >= 1) {
+            dprintf("ICP error = %g for  %d iterations\n", err, iter);
+        }
 		// Check resulting error
 		if (err < 0) {
 			if (!had_weights) {
@@ -727,7 +729,7 @@ float ICP(TriMesh *mesh1, TriMesh *mesh2,
 	}
 
 	// Some final iterations at a higher sampling rate...
-	if (verbose > 1) {
+	if (verbose >= 1) {
 		dprintf("Time for %d iterations: %.3f msec.\n\n",
 			iter, (now() - t_iters) * 1000.0f);
 	}
@@ -753,12 +755,10 @@ float ICP(TriMesh *mesh1, TriMesh *mesh2,
 			return err;
 		}
 	}
-	if (verbose == 1) {
+	if (verbose >= 1) {
 		dprintf("ICP error = %g\n", err);
-	} else if (verbose > 1) {
-		// err already printed out in ICP_iter
-		dprintf("Time for ICP: %.3f msec.\n\n",
-		       (now() - t_start) * 1000.0f);
+        dprintf("Time for ICP: %.3f msec.\n\n",
+                (now() - t_start) * 1000.0f);
 	}
 
 	if (!had_weights) {
